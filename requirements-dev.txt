@@ -1,0 +1,6 @@
+# Local notebook + EDA work (install in addition to requirements.txt)
+-r requirements.txt
+jupyter>=1.0.0
+nbconvert>=7.0.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
