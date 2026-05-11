@@ -12,15 +12,36 @@ import joblib
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parent.parent
+
+def _project_root() -> Path:
+    """Resolve repo root whether this file is `app/app.py` or a copy at repo root `app.py` (Streamlit Cloud)."""
+    here = Path(__file__).resolve().parent
+    # Layout A: .../your-repo/app.py  → models live in .../your-repo/models/
+    if (here / "models" / "regression_model.pkl").exists():
+        return here
+    # Layout B: .../your-repo/app/app.py  → models live in .../your-repo/models/
+    if (here.parent / "models" / "regression_model.pkl").exists():
+        return here.parent
+    # Prefer standard capstone layout (subdir app/) even before models exist
+    if here.name == "app":
+        return here.parent
+    # Otherwise assume this file is already at repo root
+    return here
+
+
+ROOT = _project_root()
 
 
 @lru_cache(maxsize=2)
 def _load_bundle(filename: str) -> dict:
     path = ROOT / "models" / filename
     if not path.exists():
+        tried = Path(__file__).resolve().parent
         raise FileNotFoundError(
-            f"Missing {path}. Run notebooks 02 and 03 (after 01) so the pickles are saved under models/."
+            f"Missing {path}. "
+            f"Commit and push `models/regression_model.pkl` (and classification) from your machine, "
+            f"or run notebooks 02–03 to create them. "
+            f"(Resolved project root: {ROOT}; this file dir: {tried})"
         )
     return joblib.load(path)
 
